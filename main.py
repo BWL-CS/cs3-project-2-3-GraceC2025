@@ -47,19 +47,28 @@ def draw_cat_plot():
 # Function to draw Heat Map
 def draw_heat_map():
   # Clean the data
-  df_heat = None
-
+  # Leave out paitents with high resting pressure (incorrect medicially)
+  df_heat = df[df['ap_lo'] <= df['ap_hi']]
+  # Leave out "extreme values" by using percentiles
+  # We identify rows greater than 2.5% of height data then pulll rows that meet condition (leaving out the values that are too small)
+  df_heat = df_heat[df['height'] >= df['height'].quantile(0.025)]
+  df_heat = df_heat[df['height'] <= df['height'].quantile(0.975)] # Opposite
+  # Now do it with weight instead of height
+  df_heat = df_heat[df['weight'] >= df['weight'].quantile(0.025)]
+  df_heat = df_heat[df['weight'] <= df['weight'].quantile(0.975)] # Opposite
+  
   # Calculate the correlation matrix
-  corr = None
+  corr = df_heat.corr()
 
   # Generate a mask for the upper triangle
-  mask = None
+  mask = np.triu(corr)
 
   # Set up the matplotlib figure
-  fig, ax = None
+  fig, ax = plt.subplots(figsize=(16,16))
 
   # Draw the heatmap with 'sns.heatmap()'
-
+  sns.heatmap(corr, mask=mask, annot=True, fmt='.2f')
+  
   # Do not modify the next two lines
   fig.savefig('heatmap.png')
   return fig
